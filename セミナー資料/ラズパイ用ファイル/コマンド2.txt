@@ -1,0 +1,3 @@
+cd ./iot-hub-c-raspberrypi-client-app
+sudo chmod u+x setup.sh
+sudo ./setup.sh --simulated-data

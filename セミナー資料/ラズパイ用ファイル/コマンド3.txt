@@ -1,0 +1,1 @@
+sudo ./app '<DEVICE CONNECTION STRING>'
