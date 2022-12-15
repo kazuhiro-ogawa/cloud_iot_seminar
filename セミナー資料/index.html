@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>データの可視化</title>
+
+    <!-- update the version number as needed -->
+    <script defer src="/__/firebase/8.7.1/firebase-app.js"></script>
+    <!-- include only the Firebase features as you need -->
+    <script defer src="/__/firebase/8.7.1/firebase-auth.js"></script>
+    <script defer src="/__/firebase/8.7.1/firebase-database.js"></script>
+    <!-- initialize the SDK after all desired features are loaded -->
+    <script defer src="/__/firebase/init.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"> </script>
+
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" />
+
+    <style type="text/css">
+        .style-0 {
+            fill: #f2ea00;
+            fill-opacity: 0;
+            stroke-width: 2px;
+            stroke: #b3ab00;
+        }
+        .style-1 {
+            fill: #00b72b;
+            fill-opacity: 0;
+            stroke-width: 2px;
+            stroke: #00b72b;
+        }
+
+        .style-2 {
+            fill: #b70089;
+            fill-opacity: 0;
+            stroke-width: 2px;
+            stroke: #b70089;
+        }
+
+    </style>
+
+  </head>
+  <body>
+
+
+  <h2>計測データ</h2>
+
+  <div id="visualization"></div>
+
+  <canvas id="chart_cv"></canvas>
+
+  <script type="text/javascript">
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+      let app = firebase.app();    
+
+      var data = {
+        labels: ["", "", "", "", ""],
+        datasets: [{
+          type: 'line',
+          label: 'Humidity',
+          data: [0, 0, 0, 0, 0],
+          borderColor: 'rgba(255, 100, 100, 1)',
+          yAxisID: "y-axis-1"
+        },
+        {
+          type: 'line',
+          label: 'Temperature',
+          data: [0, 0, 0, 0, 0],
+          borderColor: 'rgba(100, 255, 100, 1)',
+          yAxisID: "y-axis-2"
+        }]
+      };
+      
+      var ref = app.database().ref('M5Stack/2022-12-15')
+
+      ref.limitToLast(5).once('value',function(obj){
+        var cnt = 0;
+        
+        obj.forEach(function(childSnapshot) {
+          
+          var childKey = childSnapshot.key;
+          var childData = childSnapshot.val();
+          
+          data.labels[cnt] = childKey.toString();
+          data.datasets[0].data[cnt] = childData.humidity;
+          data.datasets[1].data[cnt] = childData.temperature;
+          cnt++;         
+        })    
+      });
+
+      var complexChartOption = {
+          responsive: true,
+          scales: {
+              yAxes: [{
+                  id: "y-axis-1",   // Y軸のID
+                  type: "linear",   // linear固定 
+                  position: "left", // どちら側に表示される軸か？
+                  ticks: {          // スケール
+                      max: 100,
+                      min: 0,
+                      stepSize: 10
+                  },
+              }, {
+                  id: "y-axis-2",
+                  type: "linear", 
+                  position: "right",
+                  ticks: {
+                      max: 50,
+                      min: 0,
+                      stepSize: 10
+                  },
+              }],
+          }
+      };
+
+      // グラフを描画 --- (*2)
+      const ctx = document.getElementById('chart_cv');
+      const chart_cv = new Chart(ctx, {
+      type: 'line', // グラフの種類
+      data: data, // データ
+      options: complexChartOption}); // オプション
+
+    });
+  </script>
+
+  <script type="text/javascript">
+    function change_status(st){
+      let ref = firebase.database().ref('M5Stack').update({"led" : st});
+    }
+  </script>
+
+  <div>
+    <button onclick="change_status(false);">OFF</button>
+    <button onclick="change_status(true);">ON</button>
+  </div>
+
+  </body>
+</html>

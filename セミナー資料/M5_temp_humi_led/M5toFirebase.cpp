@@ -25,6 +25,8 @@ void M5toFirebase::startFirebaseStream()
   Firebase.stream("", [](FirebaseStream stream) {
     if (stream.getEvent() == "put" && stream.getPath() == "/led") {
         digitalWrite(LED_PIN, stream.getDataBool());
+    }else if(stream.getEvent() == "patch" && stream.getPath() == "/M5Stack"){
+        digitalWrite(LED_PIN, stream.getDataBool());
     }
   });
 }
